@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered Fake Product Review Detection and Quality Grading System. Analyze reviews for authenticity using advanced NLP and machine learning.">
+    <title>ReviewGuard AI — Fake Review Detection & Quality Grading</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="threeBg"></canvas>
+
+    <!-- Animated background particles (CSS overlay) -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon logo-3d-container" id="logo3d">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#818cf8"/>
+                                <stop offset="100%" stop-color="#c084fc"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M16 2L4 8v8c0 7.7 5.1 14.9 12 16 6.9-1.1 12-8.3 12-16V8L16 2z" fill="url(#logoGrad)" opacity="0.15" stroke="url(#logoGrad)" stroke-width="1.5"/>
+                        <path d="M13 16l2 2 4-4" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                </div>
+                <span class="logo-text">ReviewGuard <span class="logo-ai">AI</span></span>
+            </div>
+            <nav class="header-nav">
+                <span class="nav-pill active">Analyzer</span>
+                <span class="nav-pill" onclick="scrollToSection('howItWorks')">How It Works</span>
+            </nav>
+            <div class="header-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero section -->
+    <section class="hero">
+        <div class="hero-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            AI-Powered Detection Engine
+        </div>
+        <!-- 3D Shield Hero Element -->
+        <div class="hero-3d-container" id="hero3dContainer"></div>
+        <h1 class="hero-title">
+            Detect <span class="gradient-text">Fake Reviews</span> Instantly
+        </h1>
+        <p class="hero-subtitle">
+            Paste any product review below and our ensemble ML system will analyze authenticity,
+            sentiment alignment, anomaly patterns, and deliver a quality grade in real-time.
+        </p>
+    </section>
+
+    <!-- Main analyzer -->
+    <main class="analyzer-section">
+        <div class="analyzer-card tilt-card" data-tilt>
+            <div class="card-header">
+                <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+                    Review Analyzer
+                </h2>
+                <button class="clear-btn" id="clearBtn" onclick="clearAll()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Clear
+                </button>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Paste Review Text</label>
+                <textarea
+                    id="reviewText"
+                    class="review-input"
+                    placeholder="Paste a product review here... e.g., 'I bought this phone case last week and it fits perfectly. The material feels durable and the color matches the listing. Shipping was a bit slow but overall happy with the purchase.'"
+                    rows="5"
+                ></textarea>
+                <div class="char-count"><span id="charCount">0</span> characters</div>
+            </div>
+
+            <div class="controls-row">
+                <div class="input-group rating-group">
+                    <label class="input-label">Star Rating</label>
+                    <div class="star-selector" id="starSelector">
+                        <button class="star-btn" data-rating="1" onclick="setRating(1)">★</button>
+                        <button class="star-btn" data-rating="2" onclick="setRating(2)">★</button>
+                        <button class="star-btn" data-rating="3" onclick="setRating(3)">★</button>
+                        <button class="star-btn active" data-rating="4" onclick="setRating(4)">★</button>
+                        <button class="star-btn" data-rating="5" onclick="setRating(5)">★</button>
+                    </div>
+                    <span class="rating-label" id="ratingLabel">4 Stars</span>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">User ID (Optional)</label>
+                    <input type="text" id="userId" class="text-input" placeholder="e.g., user_12345">
+                </div>
+            </div>
+
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyzeReview()">
+                <span class="btn-content" id="btnContent">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    Analyze Review
+                </span>
+                <span class="btn-loading" id="btnLoading" style="display:none;">
+                    <div class="spinner"></div>
+                    Processing...
+                </span>
+            </button>
+
+            <!-- Quick examples -->
+            <div class="examples-section">
+                <span class="examples-label">Try examples:</span>
+                <button class="example-chip authentic-chip" onclick="loadExample('authentic')">
+                    ✓ Authentic Review
+                </button>
+                <button class="example-chip fake-chip" onclick="loadExample('fake')">
+                    ✗ Fake Review
+                </button>
+                <button class="example-chip mixed-chip" onclick="loadExample('suspicious')">
+                    ⚠ Suspicious Review
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section (hidden initially) -->
+        <div class="results-section" id="resultsSection" style="display:none;">
+            <!-- Verdict Banner -->
+            <div class="verdict-banner tilt-card" data-tilt id="verdictBanner">
+                <div class="verdict-icon" id="verdictIcon"></div>
+                <div class="verdict-info">
+                    <h3 class="verdict-title" id="verdictTitle">—</h3>
+                    <p class="verdict-desc" id="verdictDesc">—</p>
+                </div>
+                <div class="verdict-confidence" id="verdictConfidence">
+                    <span class="confidence-label">Confidence</span>
+                    <span class="confidence-value" id="confidenceValue">—</span>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <!-- Authenticity Gauge -->
+                <div class="metric-card tilt-card" data-tilt id="authCard">
+                    <div class="metric-header">
+                        <span class="metric-icon auth-icon">🛡️</span>
+                        <h4 class="metric-title">Authenticity</h4>
+                    </div>
+                    <div class="gauge-container">
+                        <svg class="gauge" viewBox="0 0 200 120">
+                            <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke-width="16" stroke-linecap="round"/>
+                            <path class="gauge-fill" id="authGauge" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke-width="16" stroke-linecap="round"/>
+                        </svg>
+                        <div class="gauge-value" id="authValue">—%</div>
+                        <div class="gauge-label" id="authLabel">Probability</div>
+                    </div>
+                    <div class="metric-footer">
+                        <div class="model-breakdown" id="modelBreakdown"></div>
+                    </div>
+                </div>
+
+                <!-- Quality Grade -->
+                <div class="metric-card grade-card tilt-card" data-tilt id="gradeCard">
+                    <div class="metric-header">
+                        <span class="metric-icon grade-icon">🏆</span>
+                        <h4 class="metric-title">Quality Grade</h4>
+                    </div>
+                    <div class="grade-display">
+                        <div class="grade-circle" id="gradeCircle">
+                            <span class="grade-letter" id="gradeLetter">—</span>
+                        </div>
+                        <div class="grade-info">
+                            <span class="grade-label-text" id="gradeLabel">—</span>
+                            <span class="grade-score" id="gradeScore">Score: —</span>
+                        </div>
+                    </div>
+                    <div class="grade-breakdown" id="gradeBreakdown"></div>
+                </div>
+
+                <!-- Sentiment Analysis -->
+                <div class="metric-card tilt-card" data-tilt id="sentimentCard">
+                    <div class="metric-header">
+                        <span class="metric-icon sentiment-icon">💬</span>
+                        <h4 class="metric-title">Sentiment</h4>
+                    </div>
+                    <div class="sentiment-display">
+                        <div class="sentiment-bar-container">
+                            <div class="sentiment-labels">
+                                <span class="neg-label">Negative</span>
+                                <span class="neu-label">Neutral</span>
+                                <span class="pos-label">Positive</span>
+                            </div>
+                            <div class="sentiment-bar">
+                                <div class="sentiment-indicator" id="sentimentIndicator"></div>
+                            </div>
+                        </div>
+                        <div class="sentiment-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Polarity</span>
+                                <span class="stat-value" id="polarityValue">—</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Subjectivity</span>
+                                <span class="stat-value" id="subjectivityValue">—</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Label</span>
+                                <span class="stat-value" id="sentimentLabelValue">—</span>
+                            </div>
+                        </div>
+                        <div class="mismatch-badge" id="mismatchBadge" style="display:none;">
+                            ⚠️ Sentiment-Rating Mismatch Detected
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anomaly Detection -->
+                <div class="metric-card tilt-card" data-tilt id="anomalyCard">
+                    <div class="metric-header">
+                        <span class="metric-icon anomaly-icon">🔍</span>
+                        <h4 class="metric-title">Anomaly Detection</h4>
+                    </div>
+                    <div class="anomaly-display">
+                        <div class="anomaly-status" id="anomalyStatus">
+                            <div class="anomaly-icon-large" id="anomalyIconLarge">—</div>
+                            <span class="anomaly-label" id="anomalyLabel">—</span>
+                        </div>
+                        <div class="anomaly-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Anomaly Score</span>
+                                <div class="mini-bar">
+                                    <div class="mini-bar-fill" id="anomalyBarFill"></div>
+                                </div>
+                                <span class="stat-value" id="anomalyScoreValue">—</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Confidence</span>
+                                <span class="stat-value" id="anomalyConfidenceValue">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Features -->
+            <div class="features-card tilt-card" data-tilt id="featuresCard">
+                <div class="metric-header">
+                    <span class="metric-icon">📊</span>
+                    <h4 class="metric-title">Text Feature Analysis</h4>
+                </div>
+                <div class="features-grid" id="featuresGrid"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- How It Works -->
+    <section class="how-section" id="howItWorks">
+        <h2 class="section-title">How <span class="gradient-text">It Works</span></h2>
+        <div class="steps-grid">
+            <div class="step-card tilt-card" data-tilt>
+                <div class="step-number">01</div>
+                <div class="step-icon">📝</div>
+                <h3>Feature Extraction</h3>
+                <p>TF-IDF vectorization + handcrafted linguistic features extract meaningful patterns from review text.</p>
+            </div>
+            <div class="step-card tilt-card" data-tilt>
+                <div class="step-number">02</div>
+                <div class="step-icon">💭</div>
+                <h3>Sentiment Analysis</h3>
+                <p>NLP-based sentiment scoring detects mismatches between review tone and star rating.</p>
+            </div>
+            <div class="step-card tilt-card" data-tilt>
+                <div class="step-number">03</div>
+                <div class="step-icon">🔬</div>
+                <h3>Anomaly Detection</h3>
+                <p>Isolation Forest flags statistically unusual patterns like extreme language or repetition.</p>
+            </div>
+            <div class="step-card tilt-card" data-tilt>
+                <div class="step-number">04</div>
+                <div class="step-icon">🤖</div>
+                <h3>Ensemble Classification</h3>
+                <p>Logistic Regression, Random Forest & XGBoost vote to determine authenticity.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>ReviewGuard AI — Fake Review Detection & Quality Grading System</p>
+        <p class="footer-sub">Built with Flask · scikit-learn · XGBoost · TextBlob</p>
+    </footer>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="three-ui.js"></script>
+    <script src="interactive-fx.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
